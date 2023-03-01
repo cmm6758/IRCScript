@@ -17,7 +17,7 @@ msg = "RTXDC_2023_UTA_UGV_Hit_42_"
 channel = "#RTXDrone"
 
 #Establish connection with vehicle
-vehicle = connect('com5', wait_ready=False, baud=57600)
+vehicle = connect('/dev/ttyAMA0', wait_ready=False, baud=921600)
 
 #Pull GPS Coordinates latitude and longitude from Mavlink stream
 lat = vehicle.location.global_relative_frame.lat
