@@ -10,13 +10,34 @@
 # the requirements for the competition.
 
 from dronekit import connect # import connection lib from dronekit
-import socket, datetime, time #import socket and time libs 
-
-#Message declared at beginning  along with channel
+import socket, datetime, time, signal, sys #import socket and time libs 
+# PWM Signal Handler
+def signal_handler(sig,frame):
+    GPIO.cleanup()
+    sys.exit(0)
+    
+#Callback Function For PWM
+def pwm_callback(chan):
+    if GPIO.input(12):
+        now = datetime.datetime.now()
+        timing = now.strftime("%I:%M:%S%p)
+        vehicle.armed = False
+        s.send(('PRIVMSG ' + channel + ' :' + msg + timing + GPS + '\r\n').encode())
+        time.sleep(6)
+        vehicle.armed = True
+                              
+#Set up Pin and Interrupt for GPIO Pin
+if __name__ == '__main__':
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(12, GPIO.IN)
+    GPIO.add_event_detect(12, GPIO.RISING, callback=pwm_callback, bouncetime=200)
+    signal.signal(signal.SIGINT, signal_handler)
+                              
+#Message and channel declaration for use in IRC
 msg = "RTXDC_2023_UTA_UGV_Hit_42_"
 channel = "#RTXDrone"
 
-#Establish connection with vehicle
+#Establish connection with vehicle through USB Port 
 vehicle = connect('/dev/ttyAMA0', wait_ready=False, baud=921600)
 
 #Pull GPS Coordinates latitude and longitude from Mavlink stream
@@ -29,7 +50,6 @@ lon_str = str(long)
 
 #Write GPS part of string Message
 GPS = 'lat_' + lat_str + '_long_' + lon_str
-
 
 # Use socket lib to connect to IRC Server
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -62,11 +82,3 @@ while True: #while loop that runs indefinitely
     #disconnect if channel stops sending pings
     if len(result) ==0:
         break
-    #if this message is published:
-    if "PRIVMSG" in result and "#RTXDrone" in result and ":hello" in result:
-        #Pull current time attribute from datetime class
-        now = datetime.datetime.now()
-        #Pull time in 12 hr format and convert to string
-        time = now.strftime("%I:%M:%S_%p_")
-        #Send this message to the channel:
-        s.send(('PRIVMSG ' + channel + ' :' + msg + time + '\r\n').encode())
