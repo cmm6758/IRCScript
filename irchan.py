@@ -9,8 +9,16 @@
 # publishes a message when a sensor on our drone is hit, as per
 # the requirements for the competition.
 
-from dronekit import connect # import connection lib from dronekit
-import socket, datetime, time, signal, sys #import socket and time libs 
+from dronekit import connect 
+import socket, datetime, time, signal, sys 
+
+#Message and channel declaration for use in IRC
+
+channel = "#RTXDrone"
+h = 1
+hits = str(h)
+msg = "RTXDC_2023_UTA_UGV_Hit_" + hits + "_42_"
+
 # PWM Signal Handler
 def signal_handler(sig,frame):
     GPIO.cleanup()
@@ -24,6 +32,7 @@ def pwm_callback(chan):
         vehicle.armed = False
         s.send(('PRIVMSG ' + channel + ' :' + msg + timing + GPS + '\r\n').encode())
         time.sleep(6)
+        h = h + 1
         vehicle.armed = True
                               
 #Set up Pin and Interrupt for GPIO Pin
@@ -33,10 +42,6 @@ if __name__ == '__main__':
     GPIO.add_event_detect(12, GPIO.RISING, callback=pwm_callback, bouncetime=200)
     signal.signal(signal.SIGINT, signal_handler)
                               
-#Message and channel declaration for use in IRC
-msg = "RTXDC_2023_UTA_UGV_Hit_42_"
-channel = "#RTXDrone"
-
 #Establish connection with vehicle through USB Port 
 vehicle = connect('/dev/ttyAMA0', wait_ready=False, baud=921600)
 
