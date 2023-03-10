@@ -31,6 +31,7 @@ def pwm_callback(chan):
         timing = now.strftime("%I:%M:%S%p)
         vehicle.armed = False
         s.send(('PRIVMSG ' + channel + ' :' + msg + timing + GPS + '\r\n').encode())
+         print('PRIVMSG ' + channel + ' :' + msg + timing + GPS + '\r\n')
         time.sleep(6)
         h = h + 1
         vehicle.armed = True
