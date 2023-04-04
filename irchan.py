@@ -10,7 +10,7 @@
 # the requirements for the competition.
 
 from dronekit import connect 
-import socket, datetime, time, signal, sys 
+import socket, datetime, time, signal, sys, logging 
 
 #Message and channel declaration for use in IRC
 
@@ -31,7 +31,10 @@ def pwm_callback(chan):
         timing = now.strftime("%I:%M:%S%p)
         vehicle.armed = False
         s.send(('PRIVMSG ' + channel + ' :' + msg + timing + GPS + '\r\n').encode())
-         print('PRIVMSG ' + channel + ' :' + msg + timing + GPS + '\r\n')
+        print('PRIVMSG ' + channel + ' :' + msg + timing + GPS + '\r\n')
+        hitlog = open("hitlog_file.txt", "a")
+        hitlog.write('PRIVMSG ' + channel + ' :' + msg + timing + GPS + '\r\n')
+        hitlog.close()
         time.sleep(6)
         h = h + 1
         vehicle.armed = True
